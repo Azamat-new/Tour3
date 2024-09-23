@@ -16,7 +16,6 @@ class MyUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, phone_number, username, password=None):
-
         user = self.create_user(
             phone_number=phone_number,
             username=username
@@ -28,40 +27,25 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser):
-    username = models.CharField(
-        'Имя',
-        max_length=123
-    )
-    phone_number = models.CharField(
-        'Номер телефона',
-        max_length=17,
-        unique=True
-    )
-    email = models.EmailField(
-        'Электронная почта',
-        blank=True,
-        null=True
-    )
-    created_date = models.DateTimeField(
-        'Дата создания',
-        auto_now_add=True
-    )
-    updated_date = models.DateTimeField(
-        'Дата обновления',
-        auto_now=True
-    )
+    username = models.CharField('Имя', max_length=123)
+    phone_number = models.CharField('Номер телефона', max_length=17, unique=True)
+    email = models.EmailField('Электронная почта', blank=True, null=True)
+    created_date = models.DateTimeField('Дата создания', auto_now_add=True)
+    updated_date = models.DateTimeField('Дата обновления', auto_now=True)
     status = models.PositiveSmallIntegerField(
         choices=(
             (1, 'Обычный пользователь'),
-            (2, 'Менеджер')
+            (2, 'Менеджер'),
+            (3, 'Консультант'),
+            (4, 'Админ')
         ),
         default=1,
         verbose_name='Статус пользователя'
     )
-    is_admin = models.BooleanField(
-        'Администратор',
-        default=False
-    )
+    is_admin = models.BooleanField('Администратор', default=False)
+
+    favorite_tours = models.ManyToManyField('tour.Tour', related_name='users', blank=True)
+    bookings = models.ForeignKey('tour.Booking', on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['username']
@@ -72,16 +56,13 @@ class MyUser(AbstractBaseUser):
         return self.username
 
     def has_perm(self, perm, obj=None):
-        """Does the user have a specific permission?"""
         return True
 
     def has_module_perms(self, app_label):
-        """Does the user have permissions to view the app `app_label`?"""
         return True
 
     @property
     def is_staff(self):
-        """Is the user a member of staff?"""
         return self.is_admin
 
     class Meta:

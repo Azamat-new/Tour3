@@ -1,37 +1,64 @@
-from rest_framework.generics import CreateAPIView, RetrieveAPIView
-from .models import MyUser
-from .serializers import UserRegisterSerializer, UserProfileSerializer, UserProfileUpdateSerializer
-from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.views import Response, APIView
-from rest_framework import generics, permissions
-from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework import status, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import MyUser
+from .serializers import UserRegisterSerializer, UserProfileListSerializer, MyUserSerializer
 
 
-class UserRegistrationView(CreateAPIView):
+class MyUserViewSet(APIView):
     queryset = MyUser.objects.all()
-    serializer_class = UserRegisterSerializer
+    serializer_class = MyUserSerializer
+
+
+class UserRegisterView(APIView):
+    @swagger_auto_schema(request_body=UserRegisterSerializer)
+    def post(self, request):
+        serializer = UserRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Пользователь успешно зарегистрирован.',
+                'data': serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            'message': 'Ошибка при регистрации.',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(responses={200: UserProfileSerializer()})
+    @swagger_auto_schema(responses={200: UserProfileListSerializer()})
     def get(self, request):
-        user = MyUser.objects.filter(id=request.user.id).first()
-        serializer = UserProfileSerializer(user)
-        return Response(serializer.data)
+        user_object = get_object_or_404(MyUser, id=request.user.id)
+        serializer = UserProfileListSerializer(user_object)
+        return Response({
+            'message': 'Информация о пользователе успешно получена.',
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        request_body=UserProfileUpdateSerializer,
-        responses={200: UserProfileUpdateSerializer}
-    )
+    @swagger_auto_schema(request_body=UserProfileListSerializer)
     def patch(self, request):
-        user = get_object_or_404(MyUser, id=request.user.id)
-        serializer = UserProfileUpdateSerializer(user, data=request.data, partial=True)
-
-        if serializer.is_valid(raise_exception=True):
+        user_object = get_object_or_404(MyUser, id=request.user.id)
+        serializer = UserProfileListSerializer(user_object, data=request.data, partial=True)
+        if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({
+                'message': 'Профиль успешно обновлен.',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            'message': 'Ошибка при обновлении профиля.',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request):
+        user_object = get_object_or_404(MyUser, id=request.user.id)
+        user_object.delete()
+        return Response({
+            'message': 'Профиль успешно удален.'
+        }, status=status.HTTP_204_NO_CONTENT)
