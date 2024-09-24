@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
-
 class MyUserManager(BaseUserManager):
     def create_user(self, phone_number, username, password=None):
         if not phone_number:
@@ -21,6 +20,7 @@ class MyUserManager(BaseUserManager):
             username=username
         )
         user.is_admin = True
+        user.is_superuser = True
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -37,16 +37,16 @@ class MyUser(AbstractBaseUser):
             (1, 'Обычный пользователь'),
             (2, 'Менеджер'),
             (3, 'Консультант'),
-            (4, 'Админ')
+            (4, 'Администратор')
         ),
         default=1,
-        verbose_name='Статус пользователя'
+        verbose_name='Роль пользователя'
     )
-    is_admin = models.BooleanField('Администратор', default=False)
+    is_admin = models.BooleanField('Является администратором', default=False)
+    is_superuser = models.BooleanField(default=False)
 
-    favorite_tours = models.ManyToManyField('tour.Tour', related_name='users', blank=True)
-    bookings = models.ForeignKey('tour.Booking', on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
-
+    favorite_tours = models.ManyToManyField('tour.Tour', related_name='favorited_by_users', blank=True)
+    bookings = models.ManyToManyField('tour.Booking', blank=True, related_name='users')
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['username']
 

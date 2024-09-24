@@ -12,7 +12,6 @@ class MyUserViewSet(APIView):
     queryset = MyUser.objects.all()
     serializer_class = MyUserSerializer
 
-
 class UserRegisterView(APIView):
     @swagger_auto_schema(request_body=UserRegisterSerializer)
     def post(self, request):

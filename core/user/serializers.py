@@ -2,10 +2,9 @@ from rest_framework import serializers
 from .models import MyUser
 from tour.models import Tour, Booking
 
-
 class MyUserSerializer(serializers.ModelSerializer):
     favorite_tours = serializers.StringRelatedField(many=True)
-    bookings = serializers.StringRelatedField()
+    bookings = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = MyUser
@@ -25,14 +24,14 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True) 
+
     class Meta:
         model = MyUser
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password'] 
 
 
 class UserProfileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
-        fields = ['username', 'email', 'first_name', 'last_name']
-
-
+        fields = ['username', 'email']
