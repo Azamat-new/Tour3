@@ -1,7 +1,9 @@
 from rest_framework import generics, filters
 from django.db.models import Avg, Prefetch
+from django_filters.rest_framework import DjangoFilterBackend  # [1] Добавлен импорт для DjangoFilterBackend
 from .models import Banner, Tour, Feedback, Rating, RegionTour, DateTour
 from .serializers import BannerSerializer, TourSerializer, FeedbackSerializer, RegionTourSerializer
+from .filters import TourFilter  # [2] Добавлен импорт для фильтрации Tour
 
 
 # Получение списка баннеров и создание нового баннера
@@ -18,8 +20,9 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class TourSearchView(generics.ListAPIView):
     serializer_class = TourSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]  # [3] Добавлен DjangoFilterBackend для фильтрации
     search_fields = ['title', 'description', 'route_tour']
+    filterset_class = TourFilter  # [4] Подключен класс фильтра TourFilter
 
     def get_queryset(self):
         queryset = Tour.objects.prefetch_related(
@@ -30,6 +33,8 @@ class TourSearchView(generics.ListAPIView):
 
 class TourListView(generics.ListAPIView):
     serializer_class = TourSerializer
+    filter_backends = [DjangoFilterBackend]  # [5] Добавлен DjangoFilterBackend для фильтрации
+    filterset_class = TourFilter  # [6] Подключен фильтр для списка туров
 
     def get_queryset(self):
         queryset = Tour.objects.prefetch_related(
@@ -40,6 +45,8 @@ class TourListView(generics.ListAPIView):
 
 class TourSeasonView(generics.ListAPIView):
     serializer_class = TourSerializer
+    filter_backends = [DjangoFilterBackend]  # [7] Добавлен DjangoFilterBackend для фильтрации
+    filterset_class = TourFilter  # [8] Подключен фильтр для фильтрации по сезону
 
     def get_queryset(self):
         season = self.request.query_params.get('season', None)

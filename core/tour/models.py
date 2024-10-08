@@ -96,8 +96,16 @@ class Tour(models.Model):
     is_published = models.BooleanField('Опубликован', default=False)
     is_admin = models.BooleanField('Админская', default=False)
 
+    def get_discounted_price(self):
+        if self.discount_price:
+            return self.discount_price
+        return self.price
+
+    def is_published(self):
+        return self.is_published
+
     def __str__(self):
-        return self.title
+        return f"{self.title} - {self.get_discounted_price()}"
 
 
 class TourImage(models.Model):
@@ -120,6 +128,9 @@ class Booking(models.Model):
         (3, 'Отклонено'),
     ]
     status = models.PositiveSmallIntegerField('Статус бронирования', choices=STATUS_CHOICES)
+
+    def calculate_total_price(self):
+        return self.participants * self.tour.price  # Или с учетом скидки
 
     def __str__(self):
         return f"Booking {self.id} for {self.tour.title or 'Untitled Tour'}"

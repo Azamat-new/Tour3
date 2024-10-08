@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
+    'tour',
+    'user',
+
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -52,8 +55,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
 
-    'tour',
-    'user',
+
 ]
 
 SITE_ID = 1
@@ -187,3 +189,21 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ]
 }
+
+
+# settings.py
+
+# Защита сессий
+SESSION_COOKIE_SECURE = True  # Используйте только по HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Завершение сессии при закрытии браузера
+
+# Заголовки безопасности
+SECURE_BROWSER_XSS_FILTER = True  # Включение защиты от XSS
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Защита от MIME-типов
+SECURE_HSTS_SECONDS = 3600  # Включение HSTS на 1 час
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Включить HSTS для всех поддоменов
+SECURE_HSTS_PRELOAD = True  # Указать, что ваш сайт готов к предзагрузке HSTS
+
+# Если вы хотите использовать CSRF-токены только по HTTPS:
+CSRF_COOKIE_SECURE = True  # Использовать только по HTTPS
+
